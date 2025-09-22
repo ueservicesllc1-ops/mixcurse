@@ -6,6 +6,8 @@
     <title>MultiTrack Player - Professional DAW</title>
     <!-- JSZip library for ZIP file handling -->
     <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <!-- Tone.js library for advanced audio processing -->
+    <script src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
     <style>
         * {
             margin: 0;
@@ -24,7 +26,7 @@
         /* Top Bar */
         .top-bar {
             background: #1a1a1a;
-            height: 60px;
+            height: 90px;
             display: flex;
             align-items: center;
             padding: 0 20px;
@@ -89,46 +91,105 @@
         }
         
         .transport-btn {
-            background: #333;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
             color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 20px;
+            border: 1px solid #444;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 18px;
+            position: relative;
+            box-shadow: 
+                0 4px 8px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .transport-btn::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         
         .transport-btn:hover {
-            background: #444;
+            transform: translateY(-1px);
+            box-shadow: 
+                0 6px 12px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
         }
         
-        .transport-btn.active {
-            background: #007AFF;
+        .transport-btn.active::before {
+            opacity: 1;
+            background: radial-gradient(circle, rgba(0, 255, 0, 0.3) 0%, transparent 70%);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+        }
+        
+        .transport-btn.stop-btn::before {
+            background: radial-gradient(circle, rgba(255, 0, 0, 0.3) 0%, transparent 70%);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
         }
         
         .transport-btn.stop-btn {
-            background: #dc3545;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
         }
         
         .transport-btn.stop-btn:hover {
-            background: #c82333;
+            transform: translateY(-1px);
         }
         
         .time-display {
             display: flex;
             align-items: center;
             gap: 20px;
-            margin-left: auto;
             margin-right: 30px;
         }
         
+        .center-time-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            margin: 0 30px;
+        }
+        
         .time-info {
-            font-size: 14px;
-            color: #ccc;
+            font-size: 24px;
+            color: #3DA9FC;
+            font-weight: bold;
+            background: linear-gradient(135deg, #0D0D0D 0%, #1F1F1F 100%);
+            border: 3px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 16px 24px;
+            text-shadow: 0 0 12px #3DA9FC;
+            position: relative;
+            box-shadow: 
+                0 0 15px rgba(61, 169, 252, 0.4),
+                inset 0 0 15px rgba(61, 169, 252, 0.2);
+            min-width: 220px;
+            text-align: center;
+            overflow: hidden;
+            letter-spacing: 2px;
+        }
+        
+        .time-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(61, 169, 252, 0.3), transparent);
+            animation: ledScan 4s infinite;
         }
         
         .bpm-display {
@@ -136,6 +197,81 @@
             padding: 8px 12px;
             border-radius: 4px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bpm-btn {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            color: white;
+            border: 1px solid #444;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .bpm-btn:hover {
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border-color: #555;
+            transform: translateY(-1px);
+            box-shadow: 
+                0 4px 8px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        
+        .bpm-btn:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 1px 2px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .bpm-reset-btn {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            color: #ff6b6b;
+            border: 1px solid #444;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            margin-left: 4px;
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .bpm-reset-btn:hover {
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border-color: #555;
+            color: #ff5252;
+            transform: translateY(-1px);
+            box-shadow: 
+                0 4px 8px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        
+        .bpm-reset-btn:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 1px 2px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
         }
         
         .key-display {
@@ -143,7 +279,83 @@
             padding: 8px 12px;
             border-radius: 4px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+        
+        .key-btn {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            color: white;
+            border: 1px solid #444;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .key-btn:hover {
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border-color: #555;
+            transform: translateY(-1px);
+            box-shadow: 
+                0 4px 8px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        
+        .key-btn:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 1px 2px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .key-reset-btn {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            color: #ff6b6b;
+            border: 1px solid #444;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            margin-left: 4px;
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .key-reset-btn:hover {
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border-color: #555;
+            color: #ff5252;
+            transform: translateY(-1px);
+            box-shadow: 
+                0 4px 8px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        
+        .key-reset-btn:active {
+            transform: translateY(0);
+            box-shadow: 
+                0 1px 2px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
         
         .midi-indicators {
             display: flex;
@@ -250,11 +462,68 @@
             overflow-y: auto;
         }
         
-        .mixer-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #fff;
+        .led-progress-container {
+            width: 100%;
+            margin: 20px 0;
+            padding: 0 20px;
+        }
+        
+        .led-progress-bar {
+            width: 100%;
+            height: 12px;
+            background: linear-gradient(135deg, #0D0D0D 0%, #1F1F1F 100%);
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 
+                0 0 15px rgba(61, 169, 252, 0.3),
+                inset 0 0 15px rgba(61, 169, 252, 0.1);
+        }
+        
+        .led-progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(61, 169, 252, 0.4), transparent);
+            animation: ledScan 4s infinite;
+        }
+        
+        .led-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3DA9FC, #00D4FF);
+            border-radius: 6px;
+            width: 0%;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 8px rgba(61, 169, 252, 0.6);
+        }
+        
+        .led-progress-thumb {
+            position: absolute;
+            top: -4px;
+            width: 20px;
+            height: 20px;
+            background: #3DA9FC;
+            border-radius: 50%;
+            left: 0%;
+            transition: left 0.1s ease;
+            cursor: pointer;
+            box-shadow: 
+                0 0 12px rgba(61, 169, 252, 0.8),
+                0 0 6px rgba(61, 169, 252, 0.4);
+            border: 2px solid #E0E0E0;
+        }
+        
+        .led-progress-thumb:hover {
+            background: #00D4FF;
+            transform: scale(1.2);
+            box-shadow: 
+                0 0 16px rgba(0, 212, 255, 0.9),
+                0 0 8px rgba(0, 212, 255, 0.5);
         }
         
         .tracks-grid {
@@ -269,37 +538,65 @@
             padding: 8px;
             text-align: center;
             min-width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .track-name {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
-            color: #fff;
+            color: #3DA9FC;
             margin-bottom: 10px;
-            height: 45px;
+            height: 30px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #4a5568, #2d3748);
+            background: linear-gradient(135deg, #0D0D0D 0%, #1F1F1F 100%);
             border-radius: 6px;
-            border: 1px solid #4a5568;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            border: 2px solid #E0E0E0;
+            text-shadow: 0 0 8px #3DA9FC;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            padding: 4px 8px;
+            padding: 2px 6px;
+            position: relative;
+            box-shadow: 
+                0 0 10px rgba(61, 169, 252, 0.3),
+                inset 0 0 10px rgba(61, 169, 252, 0.1);
+            width: 100%;
+        }
+        
+        .track-name::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(61, 169, 252, 0.4), transparent);
+            animation: ledScan 4s infinite;
+        }
+        
+        @keyframes ledScan {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
         
         .track-name-text {
-            font-size: 11px;
-            font-weight: bold;
-            color: #fff;
-            margin-bottom: 2px;
+            font-family: 'Courier New', 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 12px;
+            font-weight: normal;
+            color: #00FF41;
+            margin-bottom: 0px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             max-width: 100%;
+            line-height: 1.1;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
         }
         
         .track-volume-indicator {
@@ -312,7 +609,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 4px;
+            margin-top: 8px;
+            margin-bottom: 5px;
         }
         
         .track-led {
@@ -336,35 +634,107 @@
         }
         
         .track-name.muted {
-            background: linear-gradient(135deg, #e53e3e, #c53030);
-            border-color: #e53e3e;
+            background: linear-gradient(135deg, #0D0D0D 0%, #1F1F1F 100%);
+            border-color: #ff6b6b;
+            box-shadow: 
+                0 0 10px rgba(255, 107, 107, 0.3),
+                inset 0 0 10px rgba(255, 107, 107, 0.1);
+        }
+        
+        .track-name.muted::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.4), transparent);
         }
         
         .track-name.solo {
-            background: linear-gradient(135deg, #38a169, #2f855a);
-            border-color: #38a169;
+            background: linear-gradient(135deg, #0D0D0D 0%, #1F1F1F 100%);
+            border-color: #ffd700;
+            box-shadow: 
+                0 0 10px rgba(255, 215, 0, 0.3),
+                inset 0 0 10px rgba(255, 215, 0, 0.1);
+        }
+        
+        .track-name.solo::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.4), transparent);
         }
         
         .track-name.muted .track-name-text {
-            color: #fed7d7;
+            color: #FF0040;
         }
         
         .track-name.solo .track-name-text {
-            color: #c6f6d5;
+            color: #FFD700;
         }
         
         .track-name.click-cue {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            border-color: #dc3545;
+            background: linear-gradient(135deg, #0D0D0D 0%, #1F1F1F 100%);
+            border-color: #ff6b6b;
             font-weight: bold;
+            box-shadow: 
+                0 0 10px rgba(255, 107, 107, 0.3),
+                inset 0 0 10px rgba(255, 107, 107, 0.1);
+        }
+        
+        .track-name.click-cue::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.4), transparent);
         }
         
         .track-name.click-cue .track-name-text {
-            color: #fff;
+            color: #FF0040;
         }
         
         .track-channel.click-cue {
             border-left: 4px solid #dc3545;
+        }
+        
+        .vu-meter-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 8px 0;
+            height: 60px;
+        }
+        
+        .vu-meter {
+            width: 8px;
+            height: 50px;
+            background: linear-gradient(to top, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+            border: 1px solid #333;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+        
+        .vu-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, 
+                #00ff00 0%, 
+                #80ff00 30%, 
+                #ffff00 60%, 
+                #ff8000 80%, 
+                #ff0000 100%);
+            transition: height 0.1s ease;
+            border-radius: 3px;
+            box-shadow: 0 0 3px rgba(255,255,255,0.3);
+        }
+        
+        .vu-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, 
+                rgba(0,255,0,0.8) 0%, 
+                rgba(128,255,0,0.8) 30%, 
+                rgba(255,255,0,0.8) 60%, 
+                rgba(255,128,0,0.8) 80%, 
+                rgba(255,0,0,0.8) 100%);
+            border-radius: 3px;
         }
         
         .track-channel.click-cue .fader-level {
@@ -376,49 +746,87 @@
         }
         
         .fader-container {
-            height: 120px;
+            height: 160px;
             position: relative;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0a0a0a;
+            border-radius: 4px;
+            padding: 8px;
+            border: 1px solid #333;
         }
         
         .fader-track {
             width: 20px;
             height: 100%;
-            background: #333;
-            border-radius: 10px;
+            background: #1a1a1a;
+            border-radius: 2px;
             position: relative;
             margin: 0 auto;
+            border: 1px solid #444;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
         }
         
         .fader-thumb {
             width: 24px;
-            height: 8px;
-            background: #007AFF;
-            border-radius: 4px;
+            height: 16px;
+            background: linear-gradient(145deg, #e0e0e0, #c0c0c0);
+            border-radius: 2px;
             position: absolute;
             left: -2px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.1s ease;
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            border: 1px solid #999;
         }
         
         .fader-thumb:hover {
-            background: #0056CC;
+            background: linear-gradient(145deg, #f0f0f0, #d0d0d0);
+            box-shadow: 
+                0 3px 6px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.4);
         }
         
         .fader-level {
             position: absolute;
             bottom: 0;
             width: 100%;
-            background: linear-gradient(to top, #ff0000 0%, #ffff00 50%, #00ff00 100%);
-            border-radius: 0 0 10px 10px;
-            transition: height 0.1s;
+            background: linear-gradient(to top, #ff0000 0%, #ff8800 20%, #ffff00 40%, #88ff00 60%, #00ff00 80%, #00ff88 100%);
+            border-radius: 0 0 2px 2px;
+            transition: height 0.1s ease;
+            opacity: 0.9;
+        }
+        
+        .fader-scale {
+            position: absolute;
+            left: -30px;
+            top: 0;
+            height: 100%;
+            width: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 7px;
+            color: #fff;
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .fader-scale span {
+            line-height: 1;
+            opacity: 0.8;
+            text-shadow: 0 0 2px rgba(255,255,255,0.3);
         }
         
         .track-controls {
             display: flex;
             gap: 5px;
             justify-content: center;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
         }
         
@@ -1801,8 +2209,9 @@
         
         /* Progress Bar Styles */
         .progress-container {
-            width: 200px;
-            margin: 5px 0;
+            width: 100%;
+            margin: 15px 0 20px 0;
+            padding: 0 20px;
         }
         
         .progress-bar {
@@ -1865,17 +2274,24 @@
         </div>
         
         <div class="time-display">
+            <div class="bpm-display">
+                <button class="bpm-btn" onclick="decreaseBPM()">-</button>
+                <span id="bpmDisplay">128 BPM</span>
+                <button class="bpm-btn" onclick="increaseBPM()">+</button>
+                <button class="bpm-reset-btn" onclick="resetBPM()" title="Reset to Original">↻</button>
+            </div>
+            <div class="key-display">
+                <button class="key-btn" onclick="decreaseKey()">-</button>
+                <span id="keyDisplay">C</span>
+                <button class="key-btn" onclick="increaseKey()">+</button>
+                <button class="key-reset-btn" onclick="resetKey()" title="Reset to Original">↻</button>
+            </div>
+        </div>
+        
+        <div class="center-time-display">
             <div class="time-info">
                 <span id="currentTime">00:00</span> / <span id="totalTime">00:00</span>
             </div>
-            <div class="progress-container">
-                <div class="progress-bar" id="progressBar" onclick="handleProgressBarClick(event)">
-                    <div class="progress-fill" id="progressFill"></div>
-                    <div class="progress-thumb" id="progressThumb"></div>
-                </div>
-            </div>
-            <div class="bpm-display" id="bpmDisplay">128 BPM</div>
-            <div class="key-display" id="keyDisplay">C</div>
         </div>
         
         <div class="midi-indicators">
@@ -1893,6 +2309,7 @@
         <button class="library-btn" onclick="toggleLibrary()">📚 Biblioteca</button>
         <button class="test-b2-btn" onclick="loadLibrarySongsForSidebar()" style="display: none;">🧪 Test Library</button>
         <button class="auth-btn" id="authButton" onclick="showAuthModal()">🔐 Login</button>
+        <button class="settings-btn" onclick="hotReload()" title="Hot Reload (F5)">🔄</button>
         <button class="settings-btn" onclick="openSettings()">⚙️</button>
         <button class="settings-btn" onclick="testVolumeLevels()" title="Test Volume" style="display: none;">🔊</button>
         <button class="settings-btn" onclick="debugAudioBuffers()" title="Debug Buffers" style="display: none;">🔍</button>
@@ -1955,7 +2372,12 @@
     <div class="main-content">
         <!-- Mixer Section -->
         <div class="mixer-section">
-            <div class="mixer-title">MIXER</div>
+            <div class="led-progress-container">
+                <div class="led-progress-bar" id="progressBar" onclick="handleProgressBarClick(event)">
+                    <div class="led-progress-fill" id="progressFill"></div>
+                    <div class="led-progress-thumb" id="progressThumb"></div>
+                </div>
+            </div>
             <div class="tracks-grid" id="tracksGrid">
                 <!-- Tracks will be generated here -->
             </div>
@@ -2213,7 +2635,11 @@
         let tracks = [];
         let isPlaying = false;
         let currentBPM = 128;
+        let originalBPM = 128; // BPM original de la canción
+        let tempoMultiplier = 1.0; // Multiplicador de tempo (1.0 = tempo original)
         let currentKey = 'C';
+        let originalKey = 'C'; // Key original de la canción
+        let keyOffset = 0; // Offset en semitonos (0 = tono original)
         let currentTime = 0;
         let totalTime = 0; // Will be set when audio loads
         let timeUpdateInterval = null;
@@ -2228,6 +2654,14 @@
         let audioBuffers = new Map(); // Store loaded audio buffers
         let audioSources = new Map(); // Store active audio sources
         let gainNodes = new Map(); // Store gain nodes for volume control
+        let analysers = new Map(); // Store analyser nodes for VU meters
+        let toneInitialized = false; // Track Tone.js initialization
+        let vuMeterInterval = null; // Interval for updating VU meters
+        
+        // Song cache system
+        let songCache = new Map(); // Cache loaded songs: songId -> {tracks, audioBuffers, metadata}
+        let currentLoadedSongId = null; // Track currently loaded song
+        let isLoadingSong = false; // Prevent multiple simultaneous loads
         
         // Progressive loading system
         let progressiveLoadingQueue = []; // Queue of songs to load progressively
@@ -2239,6 +2673,25 @@
         // Initialize the application
         function init() {
             console.log('🚀 INIT STARTED - Initializing MultiTrack Player...');
+            
+            // Try to restore user session from localStorage
+            try {
+                const savedUser = localStorage.getItem('lastUser');
+                if (savedUser) {
+                    const userData = JSON.parse(savedUser);
+                    console.log('🔄 Restoring user session:', userData.email);
+                    // Set currentUser for immediate use
+                    currentUser = userData;
+                    // Update auth button
+                    const authButton = document.getElementById('authButton');
+                    if (authButton) {
+                        authButton.textContent = '👤 ' + (userData.displayName || userData.email);
+                    }
+                }
+            } catch (error) {
+                console.log('No saved user session found');
+            }
+            
             // Check if JSZip is loaded
             if (typeof JSZip === 'undefined') {
                 console.warn('JSZip not loaded. ZIP file upload will not work.');
@@ -3692,6 +4145,14 @@
             
             updateTracksGrid();
             
+            // Update BPM and Key displays with song metadata
+            if (songData.tempo) {
+                setOriginalBPM(songData.tempo);
+            }
+            if (songData.key) {
+                setOriginalKey(songData.key);
+            }
+            
             // Debug: Check loaded buffers
             console.log('🔍 Debug: Checking loaded audio buffers...');
             console.log('🔍 Total tracks:', tracks.length);
@@ -4448,6 +4909,29 @@
             try {
                 console.log('🎵 loadSong called with ID:', songId);
                 
+                // Check if song is already loaded and cached
+                if (currentLoadedSongId === songId && songCache.has(songId)) {
+                    console.log('🎵 Song already loaded and cached, skipping reload:', songId);
+                    return;
+                }
+                
+                // Try to load from cache first
+                if (songCache.has(songId)) {
+                    console.log('🎵 Loading song from cache:', songId);
+                    if (loadFromCache(songId)) {
+                        isLoadingSong = false;
+                        return;
+                    }
+                }
+                
+                // Prevent multiple simultaneous loads
+                if (isLoadingSong) {
+                    console.log('⚠️ Song is already being loaded, ignoring request');
+                    return;
+                }
+                
+                isLoadingSong = true;
+                
                 // Pause progressive loading temporarily while user plays this song
                 pauseProgressiveLoading();
                 
@@ -4518,6 +5002,9 @@
                     if (currentSetlist) {
                         await saveUserState(currentSetlist, songData);
                     }
+                    
+                    // Cache the loaded song
+                    cacheLoadedSong(songId, songData);
                 } else {
                     console.error('❌ Song not found in Firestore');
                     alert('Canción no encontrada');
@@ -4528,6 +5015,7 @@
                 console.error('❌ Error stack:', error.stack);
                 alert('Error al cargar la canción: ' + error.message);
             } finally {
+                isLoadingSong = false;
                 console.log('🎵 Hiding loading indicator for song:', songId);
                 // Hide small loading indicator
                 hideSongLoadingIndicator(songId);
@@ -4707,6 +5195,7 @@
                 audioStartTime = audioContext.currentTime;
                 playAllTracks();
                 startTimeUpdate();
+                startVUMeters(); // Start VU meters
                 
                 // Update progress bar to show it's not seekable during playback
                 const progressBar = document.getElementById('progressBar');
@@ -4716,6 +5205,7 @@
                 pausedTime = currentTime;
                 stopAllTracks();
                 stopTimeUpdate();
+                stopVUMeters(); // Stop VU meters
                 
                 // Update progress bar to show it's seekable when paused
                 const progressBar = document.getElementById('progressBar');
@@ -4773,8 +5263,319 @@
             console.log(`🎚️ Master volume updated to ${value}%`);
         }
         
+        function hotReload() {
+            console.log('🔄 Hot reload initiated...');
+            
+            // Stop all audio to prevent issues
+            if (isPlaying) {
+                stopPlayback();
+            }
+            
+            // Save current state to localStorage if needed
+            if (currentUser) {
+                localStorage.setItem('lastUser', JSON.stringify({
+                    uid: currentUser.uid,
+                    email: currentUser.email,
+                    displayName: currentUser.displayName
+                }));
+            }
+            
+            // Show loading message
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '⏳';
+            button.disabled = true;
+            
+            // Reload after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        }
+        
+        function increaseBPM() {
+            if (currentBPM < 200) { // Máximo 200 BPM
+                currentBPM += 1;
+                tempoMultiplier = currentBPM / originalBPM;
+                updateBPMDisplay();
+                applyTempoChange();
+                console.log(`🎵 BPM increased to ${currentBPM} (${Math.round(tempoMultiplier * 100)}%)`);
+            }
+        }
+        
+        function decreaseBPM() {
+            if (currentBPM > 60) { // Mínimo 60 BPM
+                currentBPM -= 1;
+                tempoMultiplier = currentBPM / originalBPM;
+                updateBPMDisplay();
+                applyTempoChange();
+                console.log(`🎵 BPM decreased to ${currentBPM} (${Math.round(tempoMultiplier * 100)}%)`);
+            }
+        }
+        
+        function resetBPM() {
+            currentBPM = originalBPM;
+            tempoMultiplier = 1.0;
+            updateBPMDisplay();
+            applyTempoChange();
+            console.log(`🎵 BPM reset to original: ${originalBPM}`);
+        }
+        
+        function updateBPMDisplay() {
+            document.getElementById('bpmDisplay').textContent = currentBPM + ' BPM';
+        }
+        
+        function applyTempoChange() {
+            // Aplicar cambio de tempo a todos los tracks activos
+            if (audioContext && tracks.length > 0) {
+                tracks.forEach(track => {
+                    if (track.audioUrl && audioSources.has(track.id)) {
+                        const source = audioSources.get(track.id);
+                        if (source && source.playbackRate !== undefined) {
+                            // Solo aplicar tempo, mantener pitch original
+                            source.playbackRate.value = tempoMultiplier;
+                            console.log(`🎵 Applied tempo change to track ${track.id}: ${tempoMultiplier}x (pitch unchanged)`);
+                        }
+                    }
+                });
+                
+                // Re-aplicar pitch changes para mantener la separación
+                applyPitchChange();
+            }
+        }
+        
+        function setOriginalBPM(bpm) {
+            originalBPM = bpm;
+            currentBPM = bpm;
+            tempoMultiplier = 1.0;
+            updateBPMDisplay();
+            console.log(`🎵 Original BPM set to ${bpm}`);
+        }
+        
+        function setOriginalKey(key) {
+            originalKey = key || 'C';
+            currentKey = originalKey;
+            keyOffset = 0;
+            updateKeyDisplay();
+            console.log(`🎵 Original Key set to ${originalKey}`);
+        }
+        
+        function updateKeyDisplay() {
+            document.getElementById('keyDisplay').textContent = currentKey;
+        }
+        
+        function increaseKey() {
+            console.log('🎹 increaseKey() called, current keyOffset:', keyOffset);
+            if (keyOffset < 12) { // Máximo +12 semitonos (1 octava)
+                keyOffset += 1;
+                currentKey = getKeyFromOffset(originalKey, keyOffset);
+                updateKeyDisplay();
+                applyPitchChange();
+                console.log(`🎵 Key increased to ${currentKey} (+${keyOffset} semitones)`);
+            } else {
+                console.log('⚠️ Key already at maximum (+12 semitones)');
+            }
+        }
+        
+        function decreaseKey() {
+            console.log('🎹 decreaseKey() called, current keyOffset:', keyOffset);
+            if (keyOffset > -12) { // Mínimo -12 semitonos (1 octava)
+                keyOffset -= 1;
+                currentKey = getKeyFromOffset(originalKey, keyOffset);
+                updateKeyDisplay();
+                applyPitchChange();
+                console.log(`🎵 Key decreased to ${currentKey} (${keyOffset} semitones)`);
+            } else {
+                console.log('⚠️ Key already at minimum (-12 semitones)');
+            }
+        }
+        
+        function resetKey() {
+            keyOffset = 0;
+            currentKey = originalKey;
+            updateKeyDisplay();
+            applyPitchChange();
+            console.log(`🎵 Key reset to original: ${originalKey}`);
+        }
+        
+        function getKeyFromOffset(baseKey, offset) {
+            const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const baseIndex = keys.indexOf(baseKey);
+            if (baseIndex === -1) return baseKey;
+            
+            let newIndex = (baseIndex + offset) % 12;
+            if (newIndex < 0) newIndex += 12;
+            
+            return keys[newIndex];
+        }
+        
+        function applyPitchChange() {
+            console.log('🎹 applyPitchChange() called');
+            console.log('🎹 audioContext:', !!audioContext);
+            console.log('🎹 tracks.length:', tracks.length);
+            console.log('🎹 audioSources.size:', audioSources.size);
+            console.log('🎹 keyOffset:', keyOffset);
+            console.log('🎹 toneInitialized:', toneInitialized);
+            
+            // Aplicar cambio de pitch a todos los tracks activos
+            if (audioContext && tracks.length > 0) {
+                let appliedCount = 0;
+                tracks.forEach(track => {
+                    console.log(`🎹 Processing track ${track.id}:`, {
+                        hasAudioUrl: !!track.audioUrl,
+                        hasSource: audioSources.has(track.id),
+                        trackName: track.name
+                    });
+                    
+                    if (track.audioUrl && audioSources.has(track.id)) {
+                        const source = audioSources.get(track.id);
+                        if (source) {
+                            // Usar Tone.js pitch shifter si está disponible
+                            if (source.pitchShift && typeof Tone !== 'undefined') {
+                                // Aplicar pitch change usando Tone.js (NO afecta tempo)
+                                source.pitchShift.pitch = keyOffset;
+                                // Asegurar que el tempo se mantenga
+                                source.playbackRate.value = tempoMultiplier;
+                                console.log(`🎵 Applied Tone.js pitch shift to track ${track.id}: ${keyOffset} semitones (tempo: ${tempoMultiplier}x)`);
+                            } else {
+                                // Fallback: usar playbackRate (afecta tempo y pitch)
+                                const pitchRatio = Math.pow(2, keyOffset / 12);
+                                if (keyOffset !== 0) {
+                                    const combinedRate = tempoMultiplier * pitchRatio;
+                                    source.playbackRate.value = combinedRate;
+                                    console.log(`🎵 Applied fallback pitch change to track ${track.id}: ${combinedRate.toFixed(3)}x (tempo: ${tempoMultiplier}x, pitch: ${pitchRatio.toFixed(3)}x)`);
+                                } else {
+                                    source.playbackRate.value = tempoMultiplier;
+                                    console.log(`🎵 Reset pitch for track ${track.id}, tempo: ${tempoMultiplier}x`);
+                                }
+                            }
+                            appliedCount++;
+                        }
+                    }
+                });
+                
+                if (appliedCount === 0) {
+                    console.log('⚠️ No active audio sources found to apply pitch change');
+                    console.log('💡 Make sure audio is playing to hear pitch changes');
+                } else {
+                    console.log(`✅ Applied pitch change to ${appliedCount} tracks`);
+                }
+            } else {
+                console.log(`⚠️ Audio context not available or no tracks loaded`);
+                console.log('💡 Load a song and start playback to test pitch changes');
+            }
+        }
+        
+        
+        
         function rewind() {
             seekToTime(0);
+        }
+        
+        // VU Meter functions
+        function startVUMeters() {
+            if (vuMeterInterval) {
+                clearInterval(vuMeterInterval);
+            }
+            
+            vuMeterInterval = setInterval(updateVUMeters, 50); // Update every 50ms
+            console.log('📊 VU meters started');
+        }
+        
+        function stopVUMeters() {
+            if (vuMeterInterval) {
+                clearInterval(vuMeterInterval);
+                vuMeterInterval = null;
+            }
+            
+            // Reset all VU meters to 0
+            tracks.forEach(track => {
+                const vuBar = document.getElementById(`vu-meter-${track.id}`)?.querySelector('.vu-bar');
+                if (vuBar) {
+                    vuBar.style.height = '0%';
+                }
+            });
+            
+            console.log('📊 VU meters stopped');
+        }
+        
+        function updateVUMeters() {
+            if (!audioContext || analysers.size === 0) return;
+            
+            analysers.forEach((analyser, trackId) => {
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(dataArray);
+                
+                // Calculate RMS (Root Mean Square) for better VU meter representation
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    sum += dataArray[i] * dataArray[i];
+                }
+                const rms = Math.sqrt(sum / dataArray.length);
+                
+                // Convert to percentage (0-100%)
+                const percentage = Math.min((rms / 128) * 100, 100);
+                
+                // Update VU meter display
+                const vuBar = document.getElementById(`vu-meter-${trackId}`)?.querySelector('.vu-bar');
+                if (vuBar) {
+                    vuBar.style.height = `${percentage}%`;
+                }
+            });
+        }
+        
+        // Song cache functions
+        function cacheLoadedSong(songId, songData) {
+            console.log('💾 Caching loaded song:', songId, songData.name);
+            
+            // Create a deep copy of the current state
+            const cachedSong = {
+                songData: JSON.parse(JSON.stringify(songData)),
+                tracks: JSON.parse(JSON.stringify(tracks)),
+                audioBuffers: new Map(audioBuffers),
+                loadedAt: Date.now()
+            };
+            
+            // Store in cache
+            songCache.set(songId, cachedSong);
+            currentLoadedSongId = songId;
+            
+            console.log('✅ Song cached successfully:', songId);
+            console.log('📊 Cache size:', songCache.size, 'songs');
+        }
+        
+        function loadFromCache(songId) {
+            if (!songCache.has(songId)) {
+                console.log('❌ Song not found in cache:', songId);
+                return false;
+            }
+            
+            console.log('🚀 Loading song from cache:', songId);
+            const cachedSong = songCache.get(songId);
+            
+            // Restore the cached state
+            tracks.length = 0; // Clear current tracks
+            tracks.push(...cachedSong.tracks);
+            
+            // Clear and restore audio buffers
+            audioBuffers.clear();
+            cachedSong.audioBuffers.forEach((buffer, trackId) => {
+                audioBuffers.set(trackId, buffer);
+            });
+            
+            currentLoadedSongId = songId;
+            
+            // Update the UI
+            updateTracksGrid();
+            displaySongs([cachedSong.songData]);
+            
+            console.log('✅ Song loaded from cache:', songId);
+            return true;
+        }
+        
+        function clearSongCache() {
+            console.log('🧹 Clearing song cache');
+            songCache.clear();
+            currentLoadedSongId = null;
         }
         
         function fastForward() {
@@ -4981,9 +5782,9 @@
                     trackChannel.innerHTML = `
                         <div class="track-name ${track.muted ? 'muted' : ''} ${track.solo ? 'solo' : ''} ${isClickCue ? 'click-cue' : ''}" title="${trackName}">
                             <div class="track-name-text">${trackName}</div>
-                            <div class="track-status">
-                                <div class="track-led ${hasBuffer ? 'led-on' : 'led-off'}"></div>
-                            </div>
+                        </div>
+                        <div class="track-status">
+                            <div class="track-led ${hasBuffer ? 'led-on' : 'led-off'}"></div>
                         </div>
                         <div class="fader-container">
                             <div class="fader-track">
@@ -4991,7 +5792,12 @@
                                      onmousedown="startFaderDrag(${track.id}, event)"></div>
                                 <div class="fader-level" style="height: ${faderHeight}%;"></div>
                             </div>
-                    </div>
+                        </div>
+                        <div class="vu-meter-container">
+                            <div class="vu-meter" id="vu-meter-${track.id}">
+                                <div class="vu-bar" style="height: 0%;"></div>
+                            </div>
+                        </div>
                     <div class="track-controls">
                             <button class="track-control-btn mute-btn ${track.muted ? 'active' : ''}" 
                                     onclick="toggleMute(${track.id})" title="Mute ${trackName}">M</button>
@@ -5182,9 +5988,28 @@
                 } else {
                     console.log('🎵 Audio context already exists, state:', audioContext.state);
                 }
+                
+                // Initialize Tone.js if available
+                initToneJS();
             } catch (error) {
                 console.error('❌ Failed to initialize audio context:', error);
                 audioContext = null;
+            }
+        }
+        
+        async function initToneJS() {
+            if (typeof Tone !== 'undefined' && !toneInitialized) {
+                try {
+                    console.log('🎵 Initializing Tone.js...');
+                    await Tone.start();
+                    toneInitialized = true;
+                    console.log('✅ Tone.js initialized successfully');
+                } catch (error) {
+                    console.warn('⚠️ Could not initialize Tone.js:', error);
+                    toneInitialized = false;
+                }
+            } else if (typeof Tone === 'undefined') {
+                console.warn('⚠️ Tone.js library not loaded');
             }
         }
 
@@ -5317,6 +6142,11 @@
                 // Create gain node for volume control
                 const gainNode = audioContext.createGain();
                 
+                // Create analyser node for VU meter
+                const analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                analyser.smoothingTimeConstant = 0.8;
+                
                 // Get track volume (default to 0.8 if not set) and apply master volume
                 const track = tracks.find(t => t.id === trackId);
                 const trackVolume = track && track.volume !== undefined ? track.volume : 0.8;
@@ -5324,13 +6154,46 @@
                 gainNode.gain.value = finalVolume;
                 console.log('🔊 Setting track volume to:', trackVolume, 'x master:', masterVolume, '= final:', finalVolume);
 
-                // Connect nodes
-                source.connect(gainNode);
-                gainNode.connect(audioContext.destination);
+                // Create pitch shifter using Tone.js if available
+                let pitchShiftNode = null;
+                if (typeof Tone !== 'undefined' && toneInitialized) {
+                    try {
+                        // Create a Tone.js pitch shifter
+                        pitchShiftNode = new Tone.PitchShift({
+                            pitch: keyOffset,
+                            windowSize: 0.1,
+                            overlap: 0.5
+                        });
+                        
+                        // Connect the audio chain: source -> pitchShift -> gain -> analyser -> destination
+                        source.connect(pitchShiftNode.input);
+                        pitchShiftNode.connect(gainNode);
+                        gainNode.connect(analyser);
+                        
+                        console.log('🎵 Created Tone.js pitch shifter for track:', trackId, 'with pitch:', keyOffset);
+                    } catch (error) {
+                        console.warn('⚠️ Could not create Tone.js pitch shifter:', error);
+                        // Fallback to direct connection
+                        source.connect(gainNode);
+                        gainNode.connect(analyser);
+                    }
+                } else {
+                    // Fallback: direct connection without pitch shifting
+                    source.connect(gainNode);
+                    gainNode.connect(analyser);
+                }
+
+                // Connect to destination
+                analyser.connect(audioContext.destination);
 
                 // Store references
                 audioSources.set(trackId, source);
                 gainNodes.set(trackId, gainNode);
+                analysers.set(trackId, analyser);
+                if (pitchShiftNode) {
+                    // Store pitch shifter reference for later updates
+                    source.pitchShift = pitchShiftNode;
+                }
 
                 // Add event listener to detect when source ends
                 source.onended = () => {
