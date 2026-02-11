@@ -759,7 +759,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, deleteDoc, updateDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
@@ -780,7 +780,7 @@
         window.firebase = {
             auth, db, storage,
             createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
-            onAuthStateChanged, GoogleAuthProvider, signInWithPopup,
+            onAuthStateChanged, GoogleAuthProvider, signInWithPopup, updateProfile,
             collection, addDoc, getDocs, doc, setDoc, getDoc, deleteDoc, updateDoc, query, where,
             ref, uploadBytes, getDownloadURL
         };
@@ -828,66 +828,7 @@
             }
         }
 
-        window.showAuthModal = function () {
-            document.getElementById('authModal').style.display = 'flex';
-        }
 
-        window.hideAuthModal = function () {
-            document.getElementById('authModal').style.display = 'none';
-        }
-
-        function toggleAuthMode() {
-            isRegisterMode = !isRegisterMode;
-            const form = document.querySelector('#authForm');
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const authTitle = document.getElementById('authTitle');
-            const switchLink = document.getElementById('authLink');
-            const switchText = document.getElementById('authText');
-
-            if (isRegisterMode) {
-                authTitle.textContent = 'Crear Cuenta';
-                submitBtn.textContent = 'Registrarse';
-                switchText.textContent = '¿Ya tienes cuenta?';
-                switchLink.textContent = 'Iniciar sesión';
-            } else {
-                authTitle.textContent = 'Iniciar Sesión';
-                submitBtn.textContent = 'Iniciar Sesión';
-                switchText.textContent = '¿No tienes cuenta?';
-                switchLink.textContent = 'Crear una';
-            }
-        }
-
-        window.handleAuthSubmit = async function (event) {
-            event.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('authError');
-
-            errorDiv.style.display = 'none';
-
-            try {
-                if (isRegisterMode) {
-                    await window.firebase.createUserWithEmailAndPassword(window.firebase.auth, email, password);
-                } else {
-                    await window.firebase.signInWithEmailAndPassword(window.firebase.auth, email, password);
-                }
-                hideAuthModal();
-            } catch (error) {
-                console.error('Auth error:', error);
-                errorDiv.textContent = getFriendlyErrorMessage(error.code);
-                errorDiv.style.display = 'block';
-            }
-        }
-
-        window.handleGoogleSignIn = async function () {
-            try {
-                const provider = new window.firebase.GoogleAuthProvider();
-                await window.firebase.signInWithPopup(window.firebase.auth, provider);
-                hideAuthModal();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
 
         window.handleSignOut = async function () {
             await window.firebase.signOut(window.firebase.auth);
@@ -1234,6 +1175,7 @@
 
     <!-- Global Auth Script - Loaded independently of modules -->
     <script>
+        console.log('VERSION: NEW_AUTH_CODE_FIXED_UPDATE_PROFILE');
         // Global variables
         var isRegisterMode = false;
 
@@ -1339,9 +1281,11 @@
                             const user = userCredential.user;
 
                             // Update Profile
-                            await user.updateProfile({
-                                displayName: `${firstName} ${lastName}`
-                            });
+                            if (window.firebase.updateProfile) {
+                                await window.firebase.updateProfile(user, {
+                                    displayName: `${firstName} ${lastName}`
+                                });
+                            }
 
                             // Save to Firestore 'users' collection
                             if (window.firebase.db) {
