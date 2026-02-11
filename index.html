@@ -913,7 +913,7 @@
         async function handleFile(file) {
             if (!currentUser) {
                 alert('Debes iniciar sesión para subir archivos');
-                showAuthModal();
+                window.showAuthModal(); // Use global function
                 return;
             }
 
