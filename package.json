@@ -8,7 +8,7 @@
     "start": "node b2-proxy.js",
     "electron": "electron .",
     "electron-dev": "electron . --dev",
-    "build": "electron-builder",
+    "build-app": "electron-builder",
     "build-win": "electron-builder --win",
     "build-mac": "electron-builder --mac",
     "build-linux": "electron-builder --linux",
