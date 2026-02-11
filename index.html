@@ -667,11 +667,8 @@
     <!-- Auth Modal -->
     <div id="authModal" class="auth-modal">
         <div class="auth-content">
-            <h2 style="text-align: center; margin-bottom: 30px; font-size: 28px; color: #1a1a1a;">Iniciar Sesión</h2>
-            <button class="btn-plan" onclick="handleGoogleSignIn()" style="margin-bottom: 20px;">
-                <i class="fab fa-google" style="margin-right: 8px;"></i> Continuar con Google
-            </button>
-            <div style="text-align: center; color: #999999; margin: 20px 0;">o</div>
+            <h2 id="authTitle" style="text-align: center; margin-bottom: 30px; font-size: 28px; color: #1a1a1a;">Iniciar
+                Sesión</h2>
             <form id="authForm" onsubmit="handleAuthSubmit(event)">
                 <input type="email" id="email" placeholder="Email" required>
                 <input type="password" id="password" placeholder="Contraseña" required>
@@ -679,7 +676,8 @@
                 <button type="submit" class="btn-plan">Iniciar Sesión</button>
             </form>
             <p style="text-align: center; margin-top: 20px; color: #666666; font-size: 14px;">
-                ¿No tienes cuenta? <a href="#" onclick="toggleAuthMode()"
+                <span id="authText">¿No tienes cuenta?</span>
+                <a href="#" id="authLink" onclick="toggleAuthMode(); return false;"
                     style="color: #007AFF; text-decoration: none;">Crear una</a>
             </p>
         </div>
@@ -826,16 +824,22 @@
 
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
-            const form = document.getElementById('authForm');
+            const form = document.querySelector('#authForm');
             const submitBtn = form.querySelector('button[type="submit"]');
-            const switchLink = form.parentElement.querySelector('p a');
+            const authTitle = document.getElementById('authTitle');
+            const switchLink = document.getElementById('authLink');
+            const switchText = document.getElementById('authText');
 
             if (isRegisterMode) {
+                authTitle.textContent = 'Crear Cuenta';
                 submitBtn.textContent = 'Registrarse';
-                switchLink.innerHTML = '¿Ya tienes cuenta? <a href="#" onclick="toggleAuthMode()" style="color: #007AFF; text-decoration: none;">Iniciar sesión</a>';
+                switchText.textContent = '¿Ya tienes cuenta?';
+                switchLink.textContent = 'Iniciar sesión';
             } else {
+                authTitle.textContent = 'Iniciar Sesión';
                 submitBtn.textContent = 'Iniciar Sesión';
-                switchLink.innerHTML = '¿No tienes cuenta? <a href="#" onclick="toggleAuthMode()" style="color: #007AFF; text-decoration: none;">Crear una</a>';
+                switchText.textContent = '¿No tienes cuenta?';
+                switchLink.textContent = 'Crear una';
             }
         }
 
@@ -845,6 +849,8 @@
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('authError');
 
+            errorDiv.style.display = 'none';
+
             try {
                 if (isRegisterMode) {
                     await window.firebase.createUserWithEmailAndPassword(window.firebase.auth, email, password);
@@ -853,7 +859,8 @@
                 }
                 hideAuthModal();
             } catch (error) {
-                errorDiv.textContent = error.message;
+                console.error('Auth error:', error);
+                errorDiv.textContent = getFriendlyErrorMessage(error.code);
                 errorDiv.style.display = 'block';
             }
         }
