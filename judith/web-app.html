@@ -5008,16 +5008,6 @@
                     style="background: none; border: none; color: #ccc; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
             </div>
 
-            <!-- Google Sign In Button (HIDDEN for desktop app) -->
-            <button id="googleSignInBtn" onclick="handleGoogleSignIn()" class="google-signin-btn"
-                style="display: none;">
-                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-logo">
-                Continuar con Google
-            </button>
-
-            <div class="divider" style="display: none;">
-                <span>o</span>
-            </div>
 
             <form id="authForm" onsubmit="handleAuthSubmit(event)"
                 style="display: flex; flex-direction: column; gap: 15px;">
@@ -5049,10 +5039,9 @@
             </form>
 
             <div style="margin-top: 20px; text-align: center;">
-                <p style="color: #666; font-size: 13px; margin: 0;">
-                    ¿No tienes cuenta? Regístrate en <a href="https://mixcurse-production.up.railway.app"
-                        target="_blank" style="color: #007AFF; text-decoration: none;">la página web</a>
-                </p>
+                <button id="authSwitch" onclick="toggleAuthMode()"
+                    style="background: none; border: none; color: #007AFF; font-size: 14px; cursor: pointer; text-decoration: underline;">¿No
+                    tienes cuenta? Crear una</button>
             </div>
         </div>
     </div>
