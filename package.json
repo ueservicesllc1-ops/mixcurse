@@ -3,15 +3,16 @@
   "version": "1.0.0",
   "description": "Professional MultiTrack Player with advanced audio mixing capabilities",
   "author": "MultiTrack Player Team",
-  "main": "http://localhost:3000/judith/web-app.html",
-  "node-remote": "http://localhost:3000",
+  "main": "file:///e:/multitrack-player/judith/web-app.html",
   "chromium-args": "--disable-web-security",
   "window": {
     "title": "MultiTrack Player",
     "width": 1280,
     "height": 800,
     "show": true,
-    "frame": true
+    "frame": true,
+    "toolbar": true,
+    "show_devtools": true
   },
   "scripts": {
     "start": "node b2-proxy.js",

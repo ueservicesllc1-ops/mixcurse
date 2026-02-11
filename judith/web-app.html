@@ -4998,9 +4998,9 @@
 
     <!-- Auth Modal -->
     <div id="authModal"
-        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.9); z-index: 10000;">
         <div
-            style="background-color: #1a1a1a; border-radius: 10px; padding: 30px; width: 400px; max-width: 90vw; border: 1px solid #333;">
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #1a1a1a; border-radius: 12px; padding: 40px; width: 450px; max-width: 90vw; border: 1px solid #444; box-shadow: 0 20px 60px rgba(0,0,0,0.8);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 id="authTitle" style="color: #fff; font-size: 24px; font-weight: bold; margin: 0;">Iniciar Sesión
                 </h2>
@@ -5008,13 +5008,14 @@
                     style="background: none; border: none; color: #ccc; font-size: 24px; cursor: pointer; padding: 5px;">×</button>
             </div>
 
-            <!-- Google Sign In Button -->
-            <button id="googleSignInBtn" onclick="handleGoogleSignIn()" class="google-signin-btn">
+            <!-- Google Sign In Button (HIDDEN for desktop app) -->
+            <button id="googleSignInBtn" onclick="handleGoogleSignIn()" class="google-signin-btn"
+                style="display: none;">
                 <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-logo">
                 Continuar con Google
             </button>
 
-            <div class="divider">
+            <div class="divider" style="display: none;">
                 <span>o</span>
             </div>
 
@@ -5048,9 +5049,10 @@
             </form>
 
             <div style="margin-top: 20px; text-align: center;">
-                <button id="authSwitch" onclick="toggleAuthMode()"
-                    style="background: none; border: none; color: #007AFF; font-size: 14px; cursor: pointer; text-decoration: underline;">¿No
-                    tienes cuenta? Crear una</button>
+                <p style="color: #666; font-size: 13px; margin: 0;">
+                    ¿No tienes cuenta? Regístrate en <a href="https://mixcurse-production.up.railway.app"
+                        target="_blank" style="color: #007AFF; text-decoration: none;">la página web</a>
+                </p>
             </div>
         </div>
     </div>
@@ -5846,7 +5848,28 @@
                 hideAuthModal();
                 return { success: true };
             } catch (error) {
-                return { success: false, error: error.message };
+                console.error('❌ Login error:', error);
+
+                // Translate Firebase error codes to friendly Spanish messages
+                let friendlyMessage = 'Error al iniciar sesión';
+
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                    friendlyMessage = 'Email o contraseña incorrectos. Por favor verifica tus datos.';
+                } else if (error.code === 'auth/user-not-found') {
+                    friendlyMessage = 'No existe una cuenta con este email. Regístrate primero en la página web.';
+                } else if (error.code === 'auth/invalid-email') {
+                    friendlyMessage = 'El formato del email es inválido.';
+                } else if (error.code === 'auth/user-disabled') {
+                    friendlyMessage = 'Esta cuenta ha sido deshabilitada. Contacta soporte.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    friendlyMessage = 'Demasiados intentos fallidos. Por favor espera unos minutos.';
+                } else if (error.code === 'auth/network-request-failed') {
+                    friendlyMessage = 'Error de conexión. Verifica tu internet.';
+                } else {
+                    friendlyMessage = `Error: ${error.message}`;
+                }
+
+                return { success: false, error: friendlyMessage };
             }
         }
 
@@ -16025,7 +16048,7 @@
     </div>
 
     <!-- Auth Modal (Login) -->
-    <div id="authModal"
+    <div id="authModalNew"
         style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95);">
         <div
             style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; padding: 40px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.8); min-width: 400px;">
