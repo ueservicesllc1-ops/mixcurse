@@ -1216,6 +1216,110 @@
             if (e.target.id === 'trackNamesModal') hideTrackNamesModal();
         });
     </script>
+    </script>
+
+    <!-- Global Auth Script - Loaded independently of modules -->
+    <script>
+        // Global variables
+        var isRegisterMode = false;
+
+        // Ensure these run after DOM load
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM loaded, initializing auth UI...');
+        });
+
+        function showAuthModal() {
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        function hideAuthModal() {
+            document.getElementById('authModal').style.display = 'none';
+        }
+
+        function toggleAuthMode() {
+            console.log('Toggling auth mode...');
+            isRegisterMode = !isRegisterMode;
+            var form = document.querySelector('#authForm');
+            var submitBtn = form.querySelector('button[type="submit"]');
+            var authTitle = document.getElementById('authTitle');
+            var switchLink = document.getElementById('authLink');
+            var switchText = document.getElementById('authText');
+
+            if (isRegisterMode) {
+                authTitle.textContent = 'Crear Cuenta';
+                submitBtn.textContent = 'Registrarse';
+                if (switchText) switchText.textContent = '¿Ya tienes cuenta?';
+                if (switchLink) switchLink.textContent = 'Iniciar sesión';
+            } else {
+                authTitle.textContent = 'Iniciar Sesión';
+                submitBtn.textContent = 'Iniciar Sesión';
+                if (switchText) switchText.textContent = '¿No tienes cuenta?';
+                if (switchLink) switchLink.textContent = 'Crear una';
+            }
+        }
+
+        function handleGoogleSignIn() {
+            alert('El inicio de sesión con Google ha sido deshabilitado. Por favor usa email y contraseña.');
+        }
+
+        // Attach to window explicitly
+        window.showAuthModal = showAuthModal;
+        window.hideAuthModal = hideAuthModal;
+        window.toggleAuthMode = toggleAuthMode;
+        window.handleGoogleSignIn = handleGoogleSignIn;
+
+        // Form submission handler
+        window.handleAuthSubmit = async function (event) {
+            event.preventDefault();
+            var email = document.getElementById('email').value;
+            var password = document.getElementById('password').value;
+            var errorDiv = document.getElementById('authError');
+
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+
+            if (!email || !password) {
+                errorDiv.textContent = 'Por favor completa todos los campos';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                // Check if firebase is ready
+                if (window.firebase && window.firebase.auth) {
+                    if (isRegisterMode) {
+                        try {
+                            await window.firebase.createUserWithEmailAndPassword(window.firebase.auth, email, password);
+                            alert('Cuenta creada exitosamente!');
+                        } catch (e) {
+                            // If user already exists, try to sign in or show error
+                            throw e;
+                        }
+                    } else {
+                        await window.firebase.signInWithEmailAndPassword(window.firebase.auth, email, password);
+                    }
+                    hideAuthModal();
+                } else {
+                    errorDiv.textContent = 'El sistema de autenticación aún está cargando...';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+
+                var msg = 'Error desconocido: ' + error.message;
+                var code = error.code;
+
+                if (code === 'auth/invalid-credential' || code === 'auth/wrong-password') msg = 'Email o contraseña incorrectos.';
+                else if (code === 'auth/user-not-found') msg = 'No existe cuenta con este email.';
+                else if (code === 'auth/email-already-in-use') msg = 'Este email ya está en uso. Intenta iniciar sesión.';
+                else if (code === 'auth/weak-password') msg = 'La contraseña es muy débil (mínimo 6 caracteres).';
+                else if (code === 'auth/invalid-email') msg = 'Email inválido.';
+
+                errorDiv.textContent = msg;
+                errorDiv.style.display = 'block';
+            }
+        }
+    </script>
 </body>
 
 </html>
