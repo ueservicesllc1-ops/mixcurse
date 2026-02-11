@@ -1,6 +1,5 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -19,10 +18,25 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+// Conditionally initialize analytics (only for web environments)
+let analytics = null;
+if (typeof window !== 'undefined') {
+  try {
+    // Dynamic import to avoid issues in React Native
+    import("firebase/analytics").then(({ getAnalytics }) => {
+      analytics = getAnalytics(app);
+    }).catch((error) => {
+      // Analytics not available (e.g., in React Native)
+      console.log('Analytics not available in this environment:', error.message);
+    });
+  } catch (error) {
+    console.log('Analytics initialization skipped:', error.message);
+  }
+}
 
 export { app, analytics, auth, db, storage };
 

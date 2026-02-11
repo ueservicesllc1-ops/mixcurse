@@ -3,12 +3,12 @@ const fs = require('fs');
 const path = require('path');
 
 const server = http.createServer((req, res) => {
-  let filePath = req.url === '/' ? '/web-app.html' : req.url;
+  let filePath = req.url === '/' ? '/index.html' : req.url;
   filePath = path.join(__dirname, filePath);
-  
+
   const extname = path.extname(filePath);
   let contentType = 'text/html';
-  
+
   switch (extname) {
     case '.js':
       contentType = 'text/javascript';
@@ -26,7 +26,7 @@ const server = http.createServer((req, res) => {
       contentType = 'image/jpg';
       break;
   }
-  
+
   fs.readFile(filePath, (error, content) => {
     if (error) {
       if (error.code === 'ENOENT') {
@@ -37,7 +37,13 @@ const server = http.createServer((req, res) => {
         res.end('Server error: ' + error.code);
       }
     } else {
-      res.writeHead(200, { 'Content-Type': contentType });
+      // Add no-cache headers to prevent browser caching during development
+      res.writeHead(200, {
+        'Content-Type': contentType,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
       res.end(content, 'utf-8');
     }
   });

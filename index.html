@@ -1,64 +1,1218 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MultiTrack Player</title>
+    <title>MultiTrack Player - Professional DAW</title>
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- JSZip for ZIP/RAR extraction -->
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #1a1a1a;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container {
-            text-align: center;
-            padding: 20px;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            overflow-x: hidden;
         }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
         .logo {
-            font-size: 48px;
-            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        .title {
+
+        .logo img {
+            height: 40px;
+        }
+
+        .logo-text {
             font-size: 24px;
-            margin-bottom: 30px;
+            font-weight: 700;
+            color: #007AFF;
+            letter-spacing: -0.5px;
         }
-        .button {
-            background: #007AFF;
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-login {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
             color: white;
-            padding: 15px 30px;
             border: none;
-            border-radius: 8px;
-            font-size: 18px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #007AFF;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .btn-dashboard {
+            padding: 8px 20px;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007AFF;
+            border: 1px solid rgba(0, 122, 255, 0.2);
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
-            margin: 10px;
         }
-        .button:hover {
-            background: #0056CC;
+
+        .btn-dashboard:hover {
+            background: rgba(0, 122, 255, 0.15);
         }
-        .info {
-            margin-top: 30px;
+
+        /* Hero Banner Carousel */
+        .hero-carousel {
+            margin-top: 70px;
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #dde4eb 100%);
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+        }
+
+        .carousel-content {
+            text-align: center;
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        .carousel-content h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            letter-spacing: -1px;
+        }
+
+        .carousel-content p {
+            font-size: 20px;
+            color: #666666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .carousel-nav {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .carousel-dot.active {
+            background: #007AFF;
+            width: 30px;
+            border-radius: 6px;
+        }
+
+        /* Sections */
+        section {
+            padding: 80px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 42px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 50px;
+            color: #1a1a1a;
+            letter-spacing: -1px;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .feature-card {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 122, 255, 0.15);
+            border-color: #007AFF;
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #007AFF;
+        }
+
+        .feature-card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: #666666;
+            line-height: 1.6;
+        }
+
+        /* Plans Section */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .plan-card {
+            background: #ffffff;
+            border: 2px solid rgba(0, 0, 0, 0.08);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .plan-card.featured {
+            border-color: #007AFF;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 122, 255, 0.2);
+        }
+
+        .plan-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 122, 255, 0.2);
+        }
+
+        .plan-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: #007AFF;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .plan-price {
+            font-size: 48px;
+            font-weight: 800;
+            margin: 20px 0;
+            color: #007AFF;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .plan-features li {
+            padding: 10px 0;
+            color: #666666;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .plan-features li:before {
+            content: "\f00c ";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: #007AFF;
+            margin-right: 10px;
+        }
+
+        .btn-plan {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-plan:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 122, 255, 0.4);
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 30px;
+            padding: 60px;
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 3px dashed #007AFF;
+            border-radius: 20px;
+            padding: 60px;
+            margin: 30px 0;
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #f8f9fa;
+            border-color: #0051D5;
+        }
+
+        .upload-area.dragover {
+            background: #f0f7ff;
+            border-color: #0051D5;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #007AFF;
+        }
+
+        /* Dashboard Modal */
+        .dashboard-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            overflow-y: auto;
+        }
+
+        .dashboard-content {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Track Names Modal */
+        .track-names-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10001;
+            overflow-y: auto;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .track-names-content {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .track-item-edit {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .track-item-edit input {
+            flex: 1;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            color: #1a1a1a;
             font-size: 14px;
-            color: #888;
+        }
+
+        .track-item-edit input:focus {
+            outline: none;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        /* Auth Modal */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10002;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-content {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-content input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            color: #1a1a1a;
+            font-size: 16px;
+        }
+
+        .auth-content input:focus {
+            outline: none;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        /* Loading Modal */
+        .loading-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 10003;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 122, 255, 0.1);
+            border-top-color: #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+            }
+
+            .carousel-content h1 {
+                font-size: 36px;
+            }
+
+            section {
+                padding: 60px 20px;
+            }
+
+            .features-grid,
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="logo">🎵</div>
-        <div class="title">MultiTrack Player</div>
-        <a href="web-app.html" class="button">Abrir Aplicación</a>
-        <div class="info">
-            <p>Si tienes problemas para cargar la aplicación:</p>
-            <p>1. Asegúrate de que el archivo web-app.html esté en la misma carpeta</p>
-            <p>2. Usa un servidor web local (Python, Node.js, o Live Server)</p>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <img src="./assets/logo.png" alt="MultiTrack Player">
+            <span class="logo-text">MultiTrack Player</span>
+        </div>
+        <div class="header-right">
+            <div id="userInfo" class="user-info" style="display: none;">
+                <img id="userAvatar" class="user-avatar" src="" alt="User">
+                <span id="userName" class="user-name"></span>
+                <a href="dashboard.html" class="btn-dashboard">Dashboard</a>
+                <button class="btn-login" onclick="handleSignOut()">Cerrar Sesión</button>
+            </div>
+            <button id="loginBtn" class="btn-login" onclick="showAuthModal()">Iniciar Sesión</button>
+        </div>
+    </header>
+
+    <!-- Hero Carousel -->
+    <div class="hero-carousel">
+        <div class="carousel-slide active">
+            <div class="carousel-content">
+                <h1>MultiTrack Player</h1>
+                <p>La aplicación profesional para producción musical multitrack. Crea, mezcla y reproduce tus canciones
+                    con precisión profesional.</p>
+            </div>
+        </div>
+        <div class="carousel-slide">
+            <div class="carousel-content">
+                <h1>Sincronización Perfecta</h1>
+                <p>Todos tus tracks se mantienen perfectamente sincronizados. Control individual de volumen, efectos y
+                    más.</p>
+            </div>
+        </div>
+        <div class="carousel-slide">
+            <div class="carousel-content">
+                <h1>Sube y Organiza</h1>
+                <p>Gestiona tus proyectos desde el Dashboard. Sube archivos, edita metadatos y mantén todo organizado.
+                </p>
+            </div>
+        </div>
+        <div class="carousel-nav">
+            <div class="carousel-dot active" onclick="goToSlide(0)"></div>
+            <div class="carousel-dot" onclick="goToSlide(1)"></div>
+            <div class="carousel-dot" onclick="goToSlide(2)"></div>
         </div>
     </div>
+
+    <!-- Features Section -->
+    <section id="features">
+        <h2 class="section-title">Características</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-music"></i></div>
+                <h3>Reproducción Multitrack</h3>
+                <p>Reproduce múltiples pistas de audio simultáneamente con sincronización perfecta.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-sliders-h"></i></div>
+                <h3>Control Individual</h3>
+                <p>Ajusta el volumen, efectos y parámetros de cada track de forma independiente.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                <h3>Alta Performance</h3>
+                <p>Motor de audio optimizado para la mejor calidad y menor latencia.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-cloud"></i></div>
+                <h3>Almacenamiento en la Nube</h3>
+                <p>Guarda tus proyectos y canciones en la nube con Backblaze B2.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+                <h3>App Móvil</h3>
+                <p>Accede a tus canciones desde cualquier dispositivo móvil.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Seguro y Privado</h3>
+                <p>Tus archivos están protegidos con autenticación Firebase.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Plans Section -->
+    <section id="plans">
+        <h2 class="section-title">Planes y Precios</h2>
+        <div class="plans-grid">
+            <div class="plan-card">
+                <h3>Básico</h3>
+                <div class="plan-price">$0</div>
+                <ul class="plan-features">
+                    <li>Hasta 10 canciones</li>
+                    <li>5 GB de almacenamiento</li>
+                    <li>Reproducción básica</li>
+                    <li>Soporte por email</li>
+                </ul>
+                <button class="btn-plan" onclick="showAuthModal()">Comenzar Gratis</button>
+            </div>
+            <div class="plan-card featured">
+                <div class="plan-badge">Popular</div>
+                <h3>Profesional</h3>
+                <div class="plan-price">$9.99<span style="font-size: 18px;">/mes</span></div>
+                <ul class="plan-features">
+                    <li>Canciones ilimitadas</li>
+                    <li>50 GB de almacenamiento</li>
+                    <li>Todos los efectos</li>
+                    <li>Prioridad en soporte</li>
+                    <li>Exportación HD</li>
+                </ul>
+                <button class="btn-plan" onclick="showAuthModal()">Suscribirse</button>
+            </div>
+            <div class="plan-card">
+                <h3>Enterprise</h3>
+                <div class="plan-price">$29.99<span style="font-size: 18px;">/mes</span></div>
+                <ul class="plan-features">
+                    <li>Todo del plan Profesional</li>
+                    <li>500 GB de almacenamiento</li>
+                    <li>Colaboración en equipo</li>
+                    <li>Soporte 24/7</li>
+                    <li>API personalizada</li>
+                </ul>
+                <button class="btn-plan" onclick="showAuthModal()">Contactar</button>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-content">
+            <h2 style="text-align: center; margin-bottom: 30px; font-size: 28px; color: #1a1a1a;">Iniciar Sesión</h2>
+            <button class="btn-plan" onclick="handleGoogleSignIn()" style="margin-bottom: 20px;">
+                <i class="fab fa-google" style="margin-right: 8px;"></i> Continuar con Google
+            </button>
+            <div style="text-align: center; color: #999999; margin: 20px 0;">o</div>
+            <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <div id="authError" style="color: #ff4444; margin-bottom: 15px; display: none;"></div>
+                <button type="submit" class="btn-plan">Iniciar Sesión</button>
+            </form>
+            <p style="text-align: center; margin-top: 20px; color: #666666; font-size: 14px;">
+                ¿No tienes cuenta? <a href="#" onclick="toggleAuthMode()"
+                    style="color: #007AFF; text-decoration: none;">Crear una</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Track Names Modal -->
+    <div id="trackNamesModal" class="track-names-modal">
+        <div class="track-names-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="font-size: 28px; color: #1a1a1a;">Editar Nombres de Tracks</h2>
+                <button onclick="hideTrackNamesModal()"
+                    style="background: none; border: none; color: #666; font-size: 32px; cursor: pointer;">×</button>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 10px; color: #666666; font-weight: 600;">Nombre de la
+                    Canción *</label>
+                <input type="text" id="songName" placeholder="Ej: Mi Canción" required
+                    style="width: 100%; padding: 15px; background: #f8f9fa; border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; color: #1a1a1a; font-size: 16px;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <label
+                        style="display: block; margin-bottom: 10px; color: #666666; font-weight: 600;">Artista</label>
+                    <input type="text" id="songArtist" placeholder="Ej: Mi Banda"
+                        style="width: 100%; padding: 15px; background: #f8f9fa; border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; color: #1a1a1a;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 10px; color: #666666; font-weight: 600;">Tempo
+                        (BPM)</label>
+                    <input type="number" id="songTempo" placeholder="120" min="60" max="200"
+                        style="width: 100%; padding: 15px; background: #f8f9fa; border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; color: #1a1a1a;">
+                </div>
+            </div>
+
+            <div id="trackNamesList" style="margin-bottom: 30px; max-height: 400px; overflow-y: auto;">
+                <!-- Tracks will be populated here -->
+            </div>
+
+            <div id="trackError" style="color: #ff4444; margin-bottom: 15px; display: none;"></div>
+
+            <div style="display: flex; gap: 15px;">
+                <button onclick="hideTrackNamesModal()"
+                    style="flex: 1; padding: 15px; background: #f8f9fa; color: #1a1a1a; border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: 600;">Cancelar</button>
+                <button onclick="saveSongWithTracks()"
+                    style="flex: 1; padding: 15px; background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">Subir
+                    Canción</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="loading-modal">
+        <div class="spinner"></div>
+        <p id="loadingText" style="margin-top: 20px; font-size: 18px; color: #666666;">Procesando...</p>
+        <div id="progressBar"
+            style="width: 300px; height: 6px; background: rgba(0, 122, 255, 0.1); border-radius: 3px; margin-top: 20px; overflow: hidden;">
+            <div id="progressFill" style="height: 100%; background: #007AFF; width: 0%; transition: width 0.3s;"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, deleteDoc, updateDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3GHmCQB-yvJr3iJ82CxAEgUU_N8QjgBU",
+            authDomain: "freedommix-c5c3e.firebaseapp.com",
+            projectId: "freedommix-c5c3e",
+            storageBucket: "freedommix-c5c3e.firebasestorage.app",
+            messagingSenderId: "830247648726",
+            appId: "1:830247648726:web:fab37de48098e10184f877"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        window.firebase = {
+            auth, db, storage,
+            createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
+            onAuthStateChanged, GoogleAuthProvider, signInWithPopup,
+            collection, addDoc, getDocs, doc, setDoc, getDoc, deleteDoc, updateDoc, query, where,
+            ref, uploadBytes, getDownloadURL
+        };
+
+        let currentUser = null;
+        let currentExtractedFiles = [];
+        let isRegisterMode = false;
+
+        // Carousel
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dots = document.querySelectorAll('.carousel-dot');
+
+        function goToSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % slides.length;
+            goToSlide(currentSlide);
+        }, 5000);
+
+        // Auth State
+        window.firebase.onAuthStateChanged(window.firebase.auth, (user) => {
+            currentUser = user;
+            updateAuthUI();
+        });
+
+        function updateAuthUI() {
+            const loginBtn = document.getElementById('loginBtn');
+            const userInfo = document.getElementById('userInfo');
+
+            if (currentUser) {
+                loginBtn.style.display = 'none';
+                userInfo.style.display = 'flex';
+                document.getElementById('userName').textContent = currentUser.displayName || currentUser.email;
+                document.getElementById('userAvatar').src = currentUser.photoURL || './assets/icon.png';
+            } else {
+                loginBtn.style.display = 'block';
+                userInfo.style.display = 'none';
+            }
+        }
+
+        window.showAuthModal = function () {
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        window.hideAuthModal = function () {
+            document.getElementById('authModal').style.display = 'none';
+        }
+
+        function toggleAuthMode() {
+            isRegisterMode = !isRegisterMode;
+            const form = document.getElementById('authForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const switchLink = form.parentElement.querySelector('p a');
+
+            if (isRegisterMode) {
+                submitBtn.textContent = 'Registrarse';
+                switchLink.innerHTML = '¿Ya tienes cuenta? <a href="#" onclick="toggleAuthMode()" style="color: #007AFF; text-decoration: none;">Iniciar sesión</a>';
+            } else {
+                submitBtn.textContent = 'Iniciar Sesión';
+                switchLink.innerHTML = '¿No tienes cuenta? <a href="#" onclick="toggleAuthMode()" style="color: #007AFF; text-decoration: none;">Crear una</a>';
+            }
+        }
+
+        window.handleAuthSubmit = async function (event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('authError');
+
+            try {
+                if (isRegisterMode) {
+                    await window.firebase.createUserWithEmailAndPassword(window.firebase.auth, email, password);
+                } else {
+                    await window.firebase.signInWithEmailAndPassword(window.firebase.auth, email, password);
+                }
+                hideAuthModal();
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        window.handleGoogleSignIn = async function () {
+            try {
+                const provider = new window.firebase.GoogleAuthProvider();
+                await window.firebase.signInWithPopup(window.firebase.auth, provider);
+                hideAuthModal();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        window.handleSignOut = async function () {
+            await window.firebase.signOut(window.firebase.auth);
+        }
+
+        // File Upload - Removed from index.html, now in dashboard.html
+        // const uploadArea = document.getElementById('uploadArea');
+        // const fileInput = document.getElementById('fileInput');
+
+        /*
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        */
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        async function handleFile(file) {
+            if (!currentUser) {
+                alert('Debes iniciar sesión para subir archivos');
+                showAuthModal();
+                return;
+            }
+
+            const validExtensions = ['.zip', '.rar'];
+            const ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+
+            if (!validExtensions.includes(ext)) {
+                alert('Solo se permiten archivos ZIP o RAR');
+                return;
+            }
+
+            if (file.size > 500 * 1024 * 1024) {
+                alert('El archivo es demasiado grande. Máximo 500MB');
+                return;
+            }
+
+            showLoading('Descomprimiendo archivo...');
+
+            try {
+                const extractedFiles = await extractZipFile(file);
+                if (extractedFiles.length === 0) {
+                    hideLoading();
+                    alert('El archivo no contiene archivos de audio válidos');
+                    return;
+                }
+
+                currentExtractedFiles = extractedFiles.map(f => ({
+                    name: f.name,
+                    blob: f.blob,
+                    size: f.size,
+                    type: f.type
+                }));
+
+                showTrackNamesModal();
+                hideLoading();
+            } catch (error) {
+                hideLoading();
+                alert('Error al descomprimir: ' + error.message);
+            }
+        }
+
+        async function extractZipFile(zipFile) {
+            return new Promise((resolve, reject) => {
+                if (typeof JSZip === 'undefined') {
+                    reject(new Error('JSZip no está cargado'));
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const zip = new JSZip();
+                    zip.loadAsync(e.target.result).then(function (zip) {
+                        const audioFiles = [];
+                        const promises = [];
+
+                        Object.keys(zip.files).forEach(function (filename) {
+                            const file = zip.files[filename];
+                            if (!file.dir && isAudioFile(filename)) {
+                                promises.push(
+                                    file.async('blob').then(function (blob) {
+                                        audioFiles.push({
+                                            name: filename,
+                                            blob: blob,
+                                            size: blob.size,
+                                            type: getAudioMimeType(filename)
+                                        });
+                                    })
+                                );
+                            }
+                        });
+
+                        Promise.all(promises).then(() => resolve(audioFiles)).catch(reject);
+                    }).catch(reject);
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(zipFile);
+            });
+        }
+
+        function isAudioFile(filename) {
+            const audioExtensions = ['.mp3', '.wav', '.m4a', '.aac', '.flac', '.ogg'];
+            const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+            return audioExtensions.includes(ext);
+        }
+
+        function getAudioMimeType(filename) {
+            const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+            const mimeTypes = {
+                '.mp3': 'audio/mpeg',
+                '.wav': 'audio/wav',
+                '.m4a': 'audio/mp4',
+                '.aac': 'audio/aac',
+                '.flac': 'audio/flac',
+                '.ogg': 'audio/ogg'
+            };
+            return mimeTypes[ext] || 'audio/mpeg';
+        }
+
+        function showTrackNamesModal() {
+            const modal = document.getElementById('trackNamesModal');
+            const list = document.getElementById('trackNamesList');
+
+            list.innerHTML = '';
+            currentExtractedFiles.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'track-item-edit';
+                div.innerHTML = `
+                    <span style="color: #666666; min-width: 80px; font-weight: 600;">Track ${index + 1}:</span>
+                    <input type="text" value="${file.name}" data-index="${index}" style="flex: 1;">
+                `;
+                list.appendChild(div);
+            });
+
+            modal.style.display = 'flex';
+        }
+
+        function hideTrackNamesModal() {
+            document.getElementById('trackNamesModal').style.display = 'none';
+        }
+
+        function showLoading(text = 'Cargando...') {
+            document.getElementById('loadingModal').style.display = 'flex';
+            document.getElementById('loadingText').textContent = text;
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').style.display = 'none';
+        }
+
+        function updateProgress(current, total, text) {
+            const percent = Math.round((current / total) * 100);
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('loadingText').textContent = text || `${current} / ${total}`;
+        }
+
+        async function saveSongWithTracks() {
+            if (!currentUser) {
+                alert('Debes iniciar sesión');
+                return;
+            }
+
+            const songName = document.getElementById('songName').value.trim();
+            if (!songName) {
+                document.getElementById('trackError').textContent = 'Ingresa un nombre para la canción';
+                document.getElementById('trackError').style.display = 'block';
+                return;
+            }
+
+            const trackNames = [];
+            document.querySelectorAll('#trackNamesList input').forEach(input => {
+                const index = parseInt(input.dataset.index);
+                trackNames[index] = input.value.trim() || `Track ${index + 1}`;
+            });
+
+            const metadata = {
+                artist: document.getElementById('songArtist').value.trim(),
+                tempo: document.getElementById('songTempo').value ? parseInt(document.getElementById('songTempo').value) : null
+            };
+
+            showLoading('Subiendo archivos...');
+            hideTrackNamesModal();
+
+            try {
+                const result = await uploadSongToCloud(songName, trackNames, currentExtractedFiles, metadata);
+                hideLoading();
+
+                if (result.success) {
+                    alert('Canción subida exitosamente');
+                    currentExtractedFiles = [];
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                hideLoading();
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function uploadSongToCloud(songName, trackNames, extractedFiles, metadata = {}) {
+            try {
+                const userId = currentUser.uid;
+                const songId = Date.now().toString();
+                const uploadedTracks = [];
+
+                for (let i = 0; i < extractedFiles.length; i++) {
+                    const file = extractedFiles[i];
+                    const trackName = trackNames[i] || `Track ${i + 1}`;
+
+                    updateProgress(i, extractedFiles.length, `Subiendo ${trackName}...`);
+
+                    const fileObj = new File([file.blob], file.name, { type: file.type });
+                    const uploadResult = await uploadAudioFile(fileObj, userId);
+
+                    if (!uploadResult.success) {
+                        throw new Error(`Error al subir ${trackName}: ${uploadResult.error}`);
+                    }
+
+                    uploadedTracks.push({
+                        name: trackName,
+                        fileName: uploadResult.data.fileName,
+                        fileId: uploadResult.data.fileId,
+                        downloadUrl: uploadResult.data.downloadUrl,
+                        size: file.size,
+                        type: file.type,
+                        storage: 'b2'
+                    });
+                }
+
+                updateProgress(extractedFiles.length, extractedFiles.length, 'Guardando en base de datos...');
+
+                const songData = {
+                    userId: userId,
+                    songId: songId,
+                    name: songName,
+                    artist: metadata.artist || '',
+                    tempo: metadata.tempo || null,
+                    tracks: uploadedTracks,
+                    storage: 'b2',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+
+                await window.firebase.addDoc(window.firebase.collection(window.firebase.db, 'songs'), songData);
+
+                return { success: true, data: songData };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function uploadAudioFile(file, userId) {
+            try {
+                const maxSize = 2 * 1024 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    throw new Error('Archivo demasiado grande (máx. 2GB)');
+                }
+
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const base64 = reader.result.split(',')[1];
+                        resolve(base64);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                const fileName = `audio/${userId}/${Date.now()}_${file.name}`;
+
+                const response = await fetch('http://localhost:3001/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fileName: fileName,
+                        fileData: base64Data,
+                        contentType: file.type
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Upload failed');
+                }
+
+                const result = await response.json();
+
+                const audioFileData = {
+                    userId: userId,
+                    originalName: file.name,
+                    fileName: fileName,
+                    fileId: result.data.fileId,
+                    downloadUrl: result.data.downloadUrl,
+                    size: file.size,
+                    type: file.type,
+                    createdAt: new Date()
+                };
+
+                await window.firebase.addDoc(window.firebase.collection(window.firebase.db, 'audioFiles'), audioFileData);
+
+                return {
+                    success: true,
+                    data: {
+                        id: audioFileData.fileId,
+                        ...audioFileData
+                    }
+                };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+
+
+        // Close modals on outside click
+        document.getElementById('authModal').addEventListener('click', (e) => {
+            if (e.target.id === 'authModal') hideAuthModal();
+        });
+
+        document.getElementById('dashboardModal').addEventListener('click', (e) => {
+            if (e.target.id === 'dashboardModal') closeDashboard();
+        });
+
+        document.getElementById('trackNamesModal').addEventListener('click', (e) => {
+            if (e.target.id === 'trackNamesModal') hideTrackNamesModal();
+        });
+    </script>
 </body>
+
 </html>

@@ -1,0 +1,32 @@
+{
+  "appId": "com.multitrack.player",
+  "productName": "MultiTrack Player",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "web-app.html",
+    "main.js",
+    "assets/**/*",
+    "src/**/*",
+    "package.json"
+  ],
+  "win": {
+    "target": "nsis",
+    "icon": "assets/logo.png"
+  },
+  "mac": {
+    "target": "dmg",
+    "icon": "assets/logo.png"
+  },
+  "linux": {
+    "target": "AppImage",
+    "icon": "assets/logo.png"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true
+  }
+}

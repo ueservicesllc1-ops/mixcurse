@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MultiTrack Player</title>
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- JSZip for ZIP extraction -->
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #1a1a1a;
+        }
+
+        /* Header */
+        header {
+            background: #ffffff;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #007AFF;
+            letter-spacing: -0.5px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #007AFF;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .btn-logout {
+            padding: 8px 20px;
+            background: rgba(255, 59, 48, 0.1);
+            color: #FF3B30;
+            border: 1px solid rgba(255, 59, 48, 0.2);
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 15px;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 59, 48, 0.15);
+        }
+
+        /* Dashboard Layout */
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+
+        /* Sidebar / Plan Info */
+        .plan-info-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+        }
+
+        .plan-badge {
+            background: #007AFF;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .plan-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .plan-stats {
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .usage-bar {
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .usage-fill {
+            height: 100%;
+            background: #007AFF;
+            border-radius: 3px;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed #007AFF;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #f0f7ff;
+            border-color: #0051D5;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #007AFF;
+            margin-bottom: 15px;
+        }
+
+        /* Songs List */
+        .songs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .song-card {
+            background: #f8f9fa;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .song-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .song-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #1a1a1a;
+        }
+
+        .song-meta {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .song-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #fff;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-icon:hover {
+            color: #007AFF;
+            transform: scale(1.1);
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .track-item-edit {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .track-item-edit input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 122, 255, 0.1);
+            border-top-color: #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a href="index.html" class="logo">
+            <img src="./assets/logo.png" alt="MultiTrack Player">
+            <span class="logo-text">MultiTrack Player</span>
+        </a>
+        <div class="user-info" id="userInfo">
+            <img id="userAvatar" class="user-avatar" src="" alt="User">
+            <span id="userName" class="user-name"></span>
+            <button class="btn-logout" onclick="handleSignOut()">Cerrar Sesión</button>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Info -->
+        <aside>
+            <div class="plan-info-card">
+                <span class="plan-badge">Plan Profesional</span>
+                <h2 class="plan-title">Tu Suscripción</h2>
+                <p style="color: #666; font-size: 14px;">Renueva el 12 Ene, 2026</p>
+
+                <div class="plan-stats">
+                    <div class="stat-item">
+                        <span>Almacenamiento</span>
+                        <span class="stat-value">0 GB / 50 GB</span>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="plan-stats">
+                    <div class="stat-item">
+                        <span>Canciones</span>
+                        <span class="stat-value">0 / Ilimitadas</span>
+                    </div>
+                </div>
+
+                <button class="btn-primary" style="margin-top: 20px; background: #f0f0f0; color: #1a1a1a;">Gestionar
+                    Plan</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Upload Section -->
+            <div class="section-card">
+                <h2 class="section-title">Subir Nueva Canción</h2>
+                <p style="color: #666; margin-bottom: 20px;">Sube un archivo ZIP con tus tracks de audio (máx. 5GB).</p>
+
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <h3>Arrastra tu archivo aquí</h3>
+                    <p style="color: #666; font-size: 14px; margin-top: 5px;">o haz clic para seleccionar (ZIP)</p>
+                </div>
+                <input type="file" id="fileInput" accept=".zip" style="display: none;"
+                    onchange="handleFileSelect(event)">
+            </div>
+
+            <!-- Songs List -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">Mis Canciones</h2>
+                </div>
+                <div id="songsList" class="songs-grid">
+                    <p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">Cargando canciones...
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Track Names Modal -->
+    <div id="trackNamesModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="font-size: 24px;">Editar Detalles de la Canción</h2>
+                <button onclick="hideTrackNamesModal()"
+                    style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">Nombre de la Canción *</label>
+                <input type="text" id="songName" placeholder="Ej: Mi Canción"
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">Artista</label>
+                    <input type="text" id="songArtist" placeholder="Ej: Mi Banda"
+                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600;">Tempo (BPM)</label>
+                    <input type="number" id="songTempo" placeholder="120"
+                        style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+            </div>
+
+            <h3 style="font-size: 18px; margin-bottom: 15px;">Tracks Detectados</h3>
+            <div id="trackNamesList" style="margin-bottom: 30px; max-height: 300px; overflow-y: auto;"></div>
+
+            <div style="display: flex; gap: 15px;">
+                <button onclick="hideTrackNamesModal()"
+                    style="flex: 1; padding: 12px; background: #f0f0f0; border: none; border-radius: 10px; cursor: pointer;">Cancelar</button>
+                <button onclick="saveSongWithTracks()" class="btn-primary" style="flex: 1;">Subir Canción</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loadingText" style="margin-top: 20px; font-size: 18px; color: #666;">Procesando...</p>
+        <div style="width: 300px; height: 6px; background: rgba(0,0,0,0.1); border-radius: 3px; margin-top: 20px;">
+            <div id="progressFill" style="height: 100%; background: #007AFF; width: 0%; transition: width 0.3s;"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3GHmCQB-yvJr3iJ82CxAEgUU_N8QjgBU",
+            authDomain: "freedommix-c5c3e.firebaseapp.com",
+            projectId: "freedommix-c5c3e",
+            storageBucket: "freedommix-c5c3e.firebasestorage.app",
+            messagingSenderId: "830247648726",
+            appId: "1:830247648726:web:fab37de48098e10184f877"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentExtractedFiles = [];
+
+        // Auth Check
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('userName').textContent = user.displayName || user.email;
+                document.getElementById('userAvatar').src = user.photoURL || './assets/icon.png';
+                loadSongs();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        window.handleSignOut = async () => {
+            await signOut(auth);
+            window.location.href = 'index.html';
+        };
+
+        // Load Songs
+        async function loadSongs() {
+            const list = document.getElementById('songsList');
+            try {
+                const q = query(
+                    collection(db, 'songs'),
+                    where('userId', '==', currentUser.uid)
+                );
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    list.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">No tienes canciones subidas aún.</p>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const song = doc.data();
+                    const date = song.createdAt?.toDate ? song.createdAt.toDate().toLocaleDateString() : 'N/A';
+
+                    const card = document.createElement('div');
+                    card.className = 'song-card';
+                    card.innerHTML = `
+                        <div class="song-title">${song.name}</div>
+                        <div class="song-meta">
+                            ${song.artist || 'Artista desconocido'} • ${song.tracks?.length || 0} tracks<br>
+                            Subido el ${date}
+                        </div>
+                        <div class="song-actions">
+                            <button class="btn-icon" title="Editar"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon" title="Descargar"><i class="fas fa-download"></i></button>
+                            <button class="btn-icon" title="Eliminar" style="color: #ff3b30;"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+            } catch (error) {
+                console.error("Error loading songs:", error);
+                list.innerHTML = `<p style="color: #ff4444;">Error al cargar canciones: ${error.message}</p>`;
+            }
+        }
+
+        // File Handling
+        window.handleFileSelect = (event) => {
+            const file = event.target.files[0];
+            if (file) handleFile(file);
+        };
+
+        async function handleFile(file) {
+            const validExtensions = ['.zip'];
+            const ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+
+            if (!validExtensions.includes(ext)) {
+                alert('Solo se permiten archivos ZIP');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024 * 1024) {
+                alert('El archivo es demasiado grande. Máximo 5GB');
+                return;
+            }
+
+            showLoading('Descomprimiendo archivo...');
+
+            try {
+                const extractedFiles = await extractZipFile(file);
+                if (extractedFiles.length === 0) {
+                    hideLoading();
+                    alert('El archivo no contiene archivos de audio válidos');
+                    return;
+                }
+
+                currentExtractedFiles = extractedFiles.map(f => ({
+                    name: f.name,
+                    blob: f.blob,
+                    size: f.size,
+                    type: f.type
+                }));
+
+                showTrackNamesModal();
+                hideLoading();
+            } catch (error) {
+                hideLoading();
+                alert('Error al descomprimir: ' + error.message);
+            }
+        }
+
+        async function extractZipFile(zipFile) {
+            return new Promise((resolve, reject) => {
+                if (typeof JSZip === 'undefined') {
+                    reject(new Error('JSZip no está cargado'));
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const zip = new JSZip();
+                    zip.loadAsync(e.target.result).then(function (zip) {
+                        const audioFiles = [];
+                        const promises = [];
+
+                        Object.keys(zip.files).forEach(function (filename) {
+                            const file = zip.files[filename];
+                            if (!file.dir && isAudioFile(filename)) {
+                                promises.push(
+                                    file.async('blob').then(function (blob) {
+                                        audioFiles.push({
+                                            name: filename,
+                                            blob: blob,
+                                            size: blob.size,
+                                            type: getAudioMimeType(filename)
+                                        });
+                                    })
+                                );
+                            }
+                        });
+
+                        Promise.all(promises).then(() => resolve(audioFiles)).catch(reject);
+                    }).catch(reject);
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(zipFile);
+            });
+        }
+
+        function isAudioFile(filename) {
+            const audioExtensions = ['.mp3', '.wav', '.m4a', '.aac', '.flac', '.ogg'];
+            const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+            return audioExtensions.includes(ext);
+        }
+
+        function getAudioMimeType(filename) {
+            const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+            const mimeTypes = {
+                '.mp3': 'audio/mpeg',
+                '.wav': 'audio/wav',
+                '.m4a': 'audio/mp4',
+                '.aac': 'audio/aac',
+                '.flac': 'audio/flac',
+                '.ogg': 'audio/ogg'
+            };
+            return mimeTypes[ext] || 'audio/mpeg';
+        }
+
+        // UI Helpers
+        function showLoading(text) {
+            const overlay = document.getElementById('loadingOverlay');
+            document.getElementById('loadingText').textContent = text;
+            overlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function updateProgress(current, total, text) {
+            const percent = Math.round((current / total) * 100);
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('loadingText').textContent = text || `${current} / ${total}`;
+        }
+
+        // Track Modal
+        function showTrackNamesModal() {
+            const list = document.getElementById('trackNamesList');
+            list.innerHTML = '';
+
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files[0]) {
+                const zipName = fileInput.files[0].name.replace(/\.[^/.]+$/, "");
+                document.getElementById('songName').value = zipName;
+            }
+
+            currentExtractedFiles.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'track-item-edit';
+                div.innerHTML = `
+                    <span style="color: #666; min-width: 30px;">${index + 1}.</span>
+                    <input type="text" value="${file.name}" data-index="${index}">
+                    <span style="font-size: 12px; color: #999;">${(file.size / 1024 / 1024).toFixed(1)} MB</span>
+                `;
+                list.appendChild(div);
+            });
+
+            document.getElementById('trackNamesModal').style.display = 'flex';
+        }
+
+        window.hideTrackNamesModal = () => {
+            document.getElementById('trackNamesModal').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+        };
+
+        // Upload Logic
+        window.saveSongWithTracks = async () => {
+            const songName = document.getElementById('songName').value.trim();
+            if (!songName) {
+                alert('Ingresa un nombre para la canción');
+                return;
+            }
+
+            const trackNames = [];
+            document.querySelectorAll('#trackNamesList input').forEach(input => {
+                const index = parseInt(input.dataset.index);
+                trackNames[index] = input.value.trim() || `Track ${index + 1}`;
+            });
+
+            const metadata = {
+                artist: document.getElementById('songArtist').value.trim(),
+                tempo: document.getElementById('songTempo').value ? parseInt(document.getElementById('songTempo').value) : null
+            };
+
+            showLoading('Iniciando subida...');
+            window.hideTrackNamesModal();
+
+            try {
+                const result = await uploadSongToCloud(songName, trackNames, currentExtractedFiles, metadata);
+                hideLoading();
+
+                if (result.success) {
+                    alert('¡Canción subida exitosamente!');
+                    currentExtractedFiles = [];
+                    loadSongs();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                hideLoading();
+                alert('Error: ' + error.message);
+            }
+        };
+
+        async function uploadSongToCloud(songName, trackNames, extractedFiles, metadata = {}) {
+            try {
+                const userId = currentUser.uid;
+                const songId = Date.now().toString();
+                const uploadedTracks = [];
+
+                for (let i = 0; i < extractedFiles.length; i++) {
+                    const file = extractedFiles[i];
+                    const trackName = trackNames[i] || `Track ${i + 1}`;
+
+                    updateProgress(i, extractedFiles.length, `Subiendo ${trackName}...`);
+
+                    const fileObj = new File([file.blob], file.name, { type: file.type });
+                    const uploadResult = await uploadAudioFile(fileObj, userId);
+
+                    if (!uploadResult.success) {
+                        throw new Error(`Error al subir ${trackName}: ${uploadResult.error}`);
+                    }
+
+                    uploadedTracks.push({
+                        name: trackName,
+                        fileName: uploadResult.data.fileName,
+                        fileId: uploadResult.data.fileId,
+                        downloadUrl: uploadResult.data.downloadUrl,
+                        size: file.size,
+                        type: file.type,
+                        storage: 'b2'
+                    });
+                }
+
+                updateProgress(extractedFiles.length, extractedFiles.length, 'Guardando en base de datos...');
+
+                const songData = {
+                    userId: userId,
+                    songId: songId,
+                    name: songName,
+                    artist: metadata.artist || '',
+                    tempo: metadata.tempo || null,
+                    tracks: uploadedTracks,
+                    storage: 'b2',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+
+                await addDoc(collection(db, 'songs'), songData);
+
+                return { success: true, data: songData };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function uploadAudioFile(file, userId) {
+            try {
+                const maxSize = 5 * 1024 * 1024 * 1024;
+                if (file.size > maxSize) throw new Error('Archivo demasiado grande (máx. 5GB)');
+
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                const fileName = `audio/${userId}/${Date.now()}_${file.name}`;
+
+                const response = await fetch('http://localhost:3001/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fileName: fileName,
+                        fileData: base64Data,
+                        contentType: file.type
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Upload failed');
+                }
+
+                const result = await response.json();
+
+                const audioFileData = {
+                    userId: userId,
+                    originalName: file.name,
+                    fileName: fileName,
+                    fileId: result.data.fileId,
+                    downloadUrl: result.data.downloadUrl,
+                    size: file.size,
+                    type: file.type,
+                    createdAt: new Date()
+                };
+
+                await addDoc(collection(db, 'audioFiles'), audioFileData);
+
+                return {
+                    success: true,
+                    data: {
+                        id: audioFileData.fileId,
+                        ...audioFileData
+                    }
+                };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+    </script>
+</body>
+
+</html>

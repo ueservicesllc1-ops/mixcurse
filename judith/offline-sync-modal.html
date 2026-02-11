@@ -1,0 +1,71 @@
+<!-- OFFLINE SYNC MODAL -->
+<div id="syncModal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+    <div
+        style="background: #1a1a1a; width: 500px; max-width: 90%; border-radius: 12px; border: 1px solid #333; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+        <div style="background: linear-gradient(135deg, #007AFF, #00C6FF); padding: 20px; text-align: center;">
+            <div style="font-size: 40px; margin-bottom: 10px;">📱</div>
+            <h2 style="margin: 0; color: white; font-size: 24px;">Sincronización Offline</h2>
+            <p style="margin: 5px 0 0; color: rgba(255,255,255,0.8);">Descarga tu contenido para usar sin internet</p>
+        </div>
+
+        <div style="padding: 30px;">
+            <!-- Stats Grid -->
+            <div id="syncStats"
+                style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 25px; text-align: center;">
+                <div style="background: #2a2a2a; padding: 15px; border-radius: 8px;">
+                    <div id="syncSetlistCount" style="font-size: 24px; font-weight: bold; color: #007AFF;">0</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">Setlists</div>
+                </div>
+                <div style="background: #2a2a2a; padding: 15px; border-radius: 8px;">
+                    <div id="syncSongCount" style="font-size: 24px; font-weight: bold; color: #34C759;">0</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">Canciones</div>
+                </div>
+                <div style="background: #2a2a2a; padding: 15px; border-radius: 8px;">
+                    <div id="syncAudioCount" style="font-size: 24px; font-weight: bold; color: #FF9500;">0</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">Audios</div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div style="margin-bottom: 25px;">
+                <div
+                    style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #ccc;">
+                    <span id="syncProgressMessage">Esperando iniciar...</span>
+                    <span id="syncProgressPercent">0%</span>
+                </div>
+                <div style="background: #333; height: 10px; border-radius: 5px; overflow: hidden;">
+                    <div id="syncProgressFill"
+                        style="background: #007AFF; width: 0%; height: 100%; transition: width 0.3s ease;"></div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div id="syncActions" style="display: flex; gap: 15px;">
+                <button onclick="skipSync()"
+                    style="flex: 1; padding: 12px; background: transparent; border: 1px solid #444; color: #888; border-radius: 6px; cursor: pointer; transition: all 0.2s;">
+                    Saltar por ahora
+                </button>
+                <button id="startSyncBtn" onclick="startInitialSync()"
+                    style="flex: 1.5; padding: 12px; background: #007AFF; border: none; color: white; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,122,255,0.3);">
+                    ⬇️ Iniciar Descarga
+                </button>
+            </div>
+
+            <!-- Complete State -->
+            <div id="syncComplete" style="display: none; text-align: center;">
+                <div style="color: #34C759; font-size: 18px; font-weight: bold; margin-bottom: 20px;">
+                    ✅ ¡Sincronización Completada!
+                </div>
+                <p style="color: #999; margin-bottom: 25px; font-size: 14px;">
+                    Todo tu contenido está guardado localmente.<br>
+                    Ahora puedes usar la app sin conexión a internet.
+                </p>
+                <button onclick="closeSyncModal()"
+                    style="width: 100%; padding: 12px; background: #333; border: 1px solid #555; color: white; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s;">
+                    Comenzar a usar App
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
