@@ -1,0 +1,21 @@
+{
+    "name": "MultiTrack Player",
+    "short_name": "MultiTrack",
+    "description": "Professional MultiTrack Player for Android",
+    "start_url": "web-app.html",
+    "display": "standalone",
+    "background_color": "#0f0f0f",
+    "theme_color": "#007AFF",
+    "icons": [
+        {
+            "src": "../assets/logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "../assets/logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

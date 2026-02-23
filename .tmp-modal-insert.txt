@@ -1,0 +1,108 @@
+﻿<!-- Auth Modal -->
+<div id="authModal" class="auth-modal" style="display: none;">
+    <div class="auth-content">
+        <h2 id="authTitle" style="text-align: center; margin-bottom: 30px; font-size: 28px; color: #ffffff;">Iniciar
+            SesiÃ³n</h2>
+
+        <form id="authForm" onsubmit="handleAuthSubmit(event)">
+            <!-- Registration fields only -->
+            <div id="registerFields" style="display: none;">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="firstName" placeholder="Nombre" style="margin-bottom: 0;">
+                    <input type="text" id="lastName" placeholder="Apellido" style="margin-bottom: 0;">
+                </div>
+            </div>
+
+            <input type="email" id="emailAuth" placeholder="Email" required>
+            <input type="password" id="passwordAuth" placeholder="ContraseÃ±a" required>
+
+            <!-- Registration fields only -->
+            <div id="confirmPassField" style="display: none;">
+                <input type="password" id="confirmPassword" placeholder="Confirmar ContraseÃ±a">
+            </div>
+
+            <div id="authError" style="color: #ff4444; margin-bottom: 15px; display: none; text-align: center;"></div>
+            <button type="submit" class="auth-submit-btn">Iniciar SesiÃ³n</button>
+        </form>
+
+        <p style="text-align: center; margin-top: 20px; color: #999999; font-size: 14px;">
+            <span id="authText">Â¿No tienes cuenta?</span>
+            <a href="#" id="authLink" onclick="toggleAuthMode(); return false;"
+                style="color: #007AFF; text-decoration: none;">Crear una</a>
+        </p>
+
+        <button onclick="hideAuthModal()"
+            style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #999; font-size: 24px; cursor: pointer;">Ã—</button>
+    </div>
+</div>
+
+<style>
+    .auth-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 10002;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .auth-content {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+        border: 2px solid #007AFF;
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 122, 255, 0.4);
+        position: relative;
+    }
+
+    .auth-content input {
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #333;
+        border: 1px solid #444;
+        border-radius: 10px;
+        color: #ffffff;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+
+    .auth-content input:focus {
+        outline: none;
+        border-color: #007AFF;
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+    }
+
+    .auth-content input::placeholder {
+        color: #888;
+    }
+
+    .auth-submit-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .auth-submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 122, 255, 0.4);
+    }
+
+    .auth-submit-btn:active {
+        transform: translateY(0);
+    }
+</style>
+

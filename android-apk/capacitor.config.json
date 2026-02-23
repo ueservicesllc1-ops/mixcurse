@@ -1,0 +1,21 @@
+{
+    "appId": "com.mixcurse.multitrackplayer",
+    "appName": "MultiTrack Player",
+    "webDir": "www",
+    "bundledWebRuntime": false,
+    "server": {
+        "androidScheme": "https"
+    },
+    "android": {
+        "allowMixedContent": true,
+        "backgroundColor": "#0f0f0f",
+        "minWebViewVersion": 60
+    },
+    "plugins": {
+        "SplashScreen": {
+            "launchShowDuration": 2000,
+            "backgroundColor": "#0f0f0f",
+            "showSpinner": false
+        }
+    }
+}

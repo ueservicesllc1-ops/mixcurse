@@ -1,0 +1,17 @@
+{
+    "name": "multitrack-player-android",
+    "version": "1.0.0",
+    "description": "MultiTrack Player - Android App",
+    "private": true,
+    "scripts": {
+        "build": "echo Web assets ready",
+        "cap:add": "npx cap add android",
+        "cap:sync": "npx cap sync android",
+        "cap:build": "npx cap build android"
+    },
+    "dependencies": {
+        "@capacitor/android": "^7.5.0",
+        "@capacitor/cli": "^7.5.0",
+        "@capacitor/core": "^7.5.0"
+    }
+}

@@ -1,0 +1,77 @@
+{
+    "name": "multitrack-player-desktop",
+    "version": "1.0.0",
+    "description": "MultiTrack Player - Professional DAW Desktop App",
+    "main": "main.js",
+    "author": "MultiTrack Player Team",
+    "private": true,
+    "scripts": {
+        "start": "electron .",
+        "dev": "electron . --dev",
+        "build": "electron-builder --win",
+        "build:mac": "electron-builder --mac",
+        "build:linux": "electron-builder --linux",
+        "dist": "electron-builder --win --publish=never"
+    },
+    "devDependencies": {
+        "electron": "^28.0.0",
+        "electron-builder": "^24.9.1"
+    },
+    "build": {
+        "appId": "com.mixcurse.multitrackplayer",
+        "productName": "MultiTrack Player",
+        "copyright": "Copyright © 2026 MultiTrack Player Team",
+        "directories": {
+            "output": "dist",
+            "buildResources": "build"
+        },
+        "files": [
+            "main.js",
+            "preload.js",
+            "web-app.html",
+            "sw.js",
+            "manifest.json",
+            "offline-integration.js",
+            "additional-functions.js",
+            "assets/**/*",
+            "node_modules/**/*",
+            "package.json"
+        ],
+        "extraResources": [],
+        "win": {
+            "target": [
+                {
+                    "target": "nsis",
+                    "arch": [
+                        "x64"
+                    ]
+                },
+                {
+                    "target": "portable",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ],
+            "icon": "assets/ICONO.ico"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true,
+            "shortcutName": "MultiTrack Player",
+            "deleteAppDataOnUninstall": false
+        },
+        "linux": {
+            "target": "AppImage",
+            "icon": "assets/logo.png",
+            "category": "Audio"
+        },
+        "mac": {
+            "target": "dmg",
+            "icon": "assets/logo.png",
+            "category": "public.app-category.music"
+        }
+    }
+}

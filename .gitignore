@@ -61,3 +61,15 @@ web-build/
 # Local Netlify folder
 .netlify
 
+# APK / Build artifacts
+*.apk
+desktop-app/dist/
+desktop-app/node_modules/
+android-apk/node_modules/
+android-apk/android/.gradle/
+android-apk/android/app/build/
+android-apk/android/build/
+
+# Temp files
+.tmp-*
+local-setlist-cache/
